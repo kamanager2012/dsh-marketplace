@@ -1,5 +1,5 @@
 {
-  "name": "dsh-marketplace",
+  "name": "@kamanager2012/dsh-marketplace",
   "version": "0.1.0",
   "description": "DSH 社区市场客户端:浏览与一键安装官方 DeepSeek Harness 插件(零依赖,Node 22+)",
   "license": "MIT",
