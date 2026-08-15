@@ -5,12 +5,13 @@
 - 注册表:[kamanager2012/dsh-community-plugins](https://github.com/kamanager2012/dsh-community-plugins)
 - 零依赖(仅 Node 22+ 内置 fetch);安装插件走官方 `dsh plugin add`,不做任何私有协议
 
-## 安装
+## 安装(GitHub 直装,无需 npm registry)
 
 ```sh
-npm i -g dsh-marketplace
-# 或直接跑源码
-npx tsx src/cli-entry.ts list
+npm i -g github:kamanager2012/dsh-marketplace
+# 或 clone 后本地构建
+git clone https://github.com/kamanager2012/dsh-marketplace
+cd dsh-marketplace && npm install && npm link
 ```
 
 ## 使用
