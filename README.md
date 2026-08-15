@@ -1,6 +1,10 @@
 # dsh-marketplace
 
-**DSH 社区市场客户端** — 官方 DeepSeek Harness 插件的目录浏览与一键安装 CLI。
+**DSH 社区发行版(重制版)· 市场组件**
+
+> 官方 DeepSeek Harness 是内核;我们做的是第三方重构发行版(社区发行版/重制版):
+> 薄壳打包、安装体验、版本管理、上游契约测试、生态分发。
+> 本仓库是发行版的市场组件 —— 官方 DSH 插件的目录浏览与一键安装 CLI。
 
 - 注册表:[kamanager2012/dsh-community-plugins](https://github.com/kamanager2012/dsh-community-plugins)
 - 零依赖(仅 Node 22+ 内置 fetch);安装插件走官方 `dsh plugin add`,不做任何私有协议
