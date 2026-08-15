@@ -1,0 +1,32 @@
+{
+  "name": "dsh-marketplace",
+  "version": "0.1.0",
+  "description": "DSH 社区市场客户端:浏览与一键安装官方 DeepSeek Harness 插件(零依赖,Node 22+)",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "dsh-marketplace": "./bin/dsh-marketplace.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "rm -rf dist-test && tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^22.18.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamanager2012/dsh-marketplace.git"
+  }
+}
