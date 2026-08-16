@@ -24,6 +24,27 @@ describe('catalog schema', () => {
     assert.equal(catalog?.plugins[0]?.versions[0]?.notes, 'ok')
   })
 
+  it('carries registry verification facts: integrity and provenance', () => {
+    const withFacts = {
+      ...valid,
+      plugins: [{
+        ...valid.plugins[0],
+        versions: [{
+          version: '0.1.0',
+          testedDsh: '0.1.0-rc.6',
+          integrity: 'sha512-abcdef',
+          provenance: true,
+        }],
+      }],
+    }
+    const catalog = parseCatalog(withFacts)
+    assert.equal(catalog?.plugins[0]?.versions[0]?.integrity, 'sha512-abcdef')
+    assert.equal(catalog?.plugins[0]?.versions[0]?.provenance, true)
+    const bare = parseCatalog(valid)
+    assert.equal(bare?.plugins[0]?.versions[0]?.integrity, undefined)
+    assert.equal(bare?.plugins[0]?.versions[0]?.provenance, undefined)
+  })
+
   it('rejects duplicate plugin names', () => {
     const dup = { ...valid, plugins: [...valid.plugins, ...valid.plugins] }
     assert.equal(parseCatalog(dup), undefined)

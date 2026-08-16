@@ -9,6 +9,10 @@ export interface PluginVersion {
   /** The official DSH rc line this version was tested against (0.1.0-rc.N). */
   testedDsh: string
   notes?: string
+  /** npm dist.integrity (sha512) recorded by the registry verification. */
+  integrity?: string
+  /** npm provenance attestation present at verification time. */
+  provenance?: boolean
 }
 
 export interface PluginEntry {
@@ -57,6 +61,8 @@ export function parseCatalog(raw: unknown): PluginCatalog | undefined {
       if (typeof version.testedDsh !== 'string' || !DSH_RC_LINE.test(version.testedDsh)) return undefined
       const entry: PluginVersion = { version: version.version, testedDsh: version.testedDsh }
       if (typeof version.notes === 'string' && version.notes !== '') entry.notes = version.notes
+      if (typeof version.integrity === 'string' && version.integrity !== '') entry.integrity = version.integrity
+      if (version.provenance === true) entry.provenance = true
       versions.push(entry)
     }
     plugins.push({

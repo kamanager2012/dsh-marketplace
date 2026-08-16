@@ -68,7 +68,12 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
       console.log(`  仓库: ${item.plugin.repo}`)
       for (const version of item.plugin.versions) {
         const mark = version.testedDsh === testedDsh ? '' : '(未验证)'
+        const facts = [
+          version.integrity !== undefined ? `digest ${version.integrity.slice(0, 18)}…` : undefined,
+          version.provenance === true ? 'provenance ✓' : undefined,
+        ].filter((fact) => fact !== undefined)
         console.log(`  ${version.version}  验证线 ${version.testedDsh} ${mark}${version.notes !== undefined ? ` — ${version.notes}` : ''}`)
+        if (facts.length > 0) console.log(`     ${facts.join('  ·  ')}`)
       }
       return 0
     }
@@ -90,6 +95,12 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
       if (item.latest.status === 'untested' && version === undefined) {
         console.warn(`⚠ ${packageName} 最新版未在 ${testedDsh} 上验证;用 @${item.latest.entry.version} 明确指定仍可安装`)
       }
+      const entry = item.plugin.versions.find(v => v.version === resolvedVersion)
+      if (entry?.integrity !== undefined) {
+        console.log(`注册表 digest: ${entry.integrity}`)
+        console.log('核对:npm view ' + packageName + '@' + resolvedVersion + ' dist.integrity')
+      }
+      if (entry?.provenance === true) console.log('npm provenance: ✓ 发布证明存在')
       const { status } = installPlugin({ profile: options.profile ?? 'dsh-community-tui', packageName, version: resolvedVersion })
       return status ?? 1
     }
