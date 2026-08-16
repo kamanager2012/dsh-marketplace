@@ -15,6 +15,12 @@ stable for discovery/install UX; it is not a new Runtime, registry owner, or
 cross-platform release channel, and it should not compete with the canonical product's
 release work.
 
+Current implementation status (2026-08-16): `info` displays the package digest and
+provenance recorded by the registry. Before invoking the official install chain,
+`install` prints the registry digest and an
+`npm view <name>@<version> dist.integrity` verification command. The current test suite
+is **11/11 green**.
+
 ## Position in the ecosystem
 
 | Repository | Role | Entry |

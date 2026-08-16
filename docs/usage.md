@@ -43,7 +43,16 @@ dsh-marketplace info <package-name>
 dsh-marketplace install <package-name>[@version]
 ```
 
-`list`、`search` 和 `info` 展示的是注册表中的验证线，不是实时安全扫描结果。`install` 只传递用户选择，不绕过官方插件协议。
+`list`、`search` 和 `info` 展示的是注册表中的验证线，不是实时安全扫描结果。`info`
+还会显示注册表记录的 digest 和 provenance（如果有）。`install` 在调用官方安装链
+前会打印注册表 digest 和核对命令，例如：
+
+```text
+注册表 digest: sha512-...
+核对:npm view <name>@<version> dist.integrity
+```
+
+它只传递用户选择，不绕过官方插件协议。当前实现的测试套件为 11/11 通过。
 
 ## 如何解读兼容性
 

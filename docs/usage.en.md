@@ -43,7 +43,18 @@ dsh-marketplace info <package-name>
 dsh-marketplace install <package-name>[@version]
 ```
 
-`list`, `search`, and `info` display registry verification lines, not a live security scan. `install` forwards the user choice and does not bypass the official plugin protocol.
+`list`, `search`, and `info` display registry verification lines, not a live security scan.
+`info` also displays the registry-recorded digest and provenance when present. Before
+calling the official install chain, `install` prints the registry digest and a check
+command such as:
+
+```text
+registry digest: sha512-...
+npm view <name>@<version> dist.integrity
+```
+
+It forwards the user choice and does not bypass the official plugin protocol. The
+current implementation test suite is 11/11 green.
 
 ## Read compatibility correctly
 

@@ -12,6 +12,10 @@
 当前策略是 **GitHub-only distribution / 稳定维护**：Marketplace 暂不抢主产品发行
 优先级，也不扩展成新的 Runtime、Registry 或跨平台打包渠道。
 
+当前实现状态（2026-08-16）：`info` 会展示注册表记录的 package digest 和 provenance；
+`install` 会在调用官方安装链前打印注册表 digest 以及
+`npm view <name>@<version> dist.integrity` 核对命令。当前测试套件为 **11/11 通过**。
+
 ## 在六仓生态中的位置
 
 | 仓库 | 定位 | 入口 |
