@@ -46,6 +46,8 @@ npm install
 npm link
 ```
 
+完整使用、数据流和排障说明见[双语使用指南](docs/usage.md) / [English guide](docs/usage.en.md)。
+
 安装插件还需要官方 `dsh` CLI 位于 PATH：
 
 ```sh

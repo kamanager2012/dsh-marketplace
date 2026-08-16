@@ -49,6 +49,8 @@ npm install
 npm link
 ```
 
+See the [bilingual usage guide](docs/usage.en.md) for the data flow, compatibility markers, and troubleshooting path.
+
 Plugin installation also requires the official `dsh` CLI on `PATH`:
 
 ```sh
