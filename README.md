@@ -1,50 +1,75 @@
 # dsh-marketplace
 
-**DSH 社区发行版(重制版)· 市场组件**
+**社区插件发现与安装体验（Discovery / Distribution UX）**
 
-> 官方 DeepSeek Harness 是内核;我们做的是第三方重构发行版(社区发行版/重制版):
-> 薄壳打包、安装体验、版本管理、上游契约测试、生态分发。
-> 本仓库是发行版的市场组件 —— 官方 DSH 插件的目录浏览与一键安装 CLI。
+[English](README.en.md) | 简体中文
 
-- 注册表:[kamanager2012/dsh-community-plugins](https://github.com/kamanager2012/dsh-community-plugins)
-- 零依赖(仅 Node 22+ 内置 fetch);安装插件走官方 `dsh plugin add`,不做任何私有协议
+本仓库提供官方 DeepSeek Harness 插件的目录浏览、搜索、兼容性标记和安装入口。
+它不是 Runtime、不是新的 Package Manager，也不拥有插件真源；目录来自
+[`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins)，
+实际安装继续调用官方 `dsh plugin add`。
 
-## 安装(GitHub 直装,无需 npm registry)
+## 在六仓生态中的位置
+
+| 仓库 | 定位 | 入口 |
+|---|---|---|
+| [`dsh-community`](https://github.com/kamanager2012/dsh-community) | Canonical Product，唯一正式下载入口 | [最新 Release](https://github.com/kamanager2012/dsh-community/releases/latest) |
+| [`deepseek-harness-suite`](https://github.com/kamanager2012/deepseek-harness-suite) | Community Labs | [实验仓](https://github.com/kamanager2012/deepseek-harness-suite) |
+| [`deepseek-harness-handbook`](https://github.com/kamanager2012/deepseek-harness-handbook) | Knowledge / Evidence | [在线手册](https://kamanager2012.github.io/deepseek-harness-handbook/) |
+| [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins) | Compatibility Registry | [`catalog.json`](https://github.com/kamanager2012/dsh-community-plugins/blob/main/catalog.json) |
+| `dsh-marketplace` | Discovery / Install UX | 本仓库的 CLI |
+| [`dsh-community-edition`](https://github.com/kamanager2012/dsh-community-edition) | Merge & Archive | [历史参考](https://github.com/kamanager2012/dsh-community-edition) |
+
+数据流保持单向且可追踪：
+
+```text
+dsh-community-plugins/catalog.json
+              ↓ fetch / parse / classify
+        dsh-marketplace
+              ↓ official command
+        dsh plugin add <name>
+```
+
+## 安装
+
+需要 Node.js 22+。可以直接从 GitHub 安装，或从源码链接：
 
 ```sh
 npm i -g github:kamanager2012/dsh-marketplace
-# 或 clone 后本地构建
+
 git clone https://github.com/kamanager2012/dsh-marketplace
-cd dsh-marketplace && npm install && npm link
+cd dsh-marketplace
+npm install
+npm link
+```
+
+安装插件还需要官方 `dsh` CLI 位于 PATH：
+
+```sh
+npm i -g @deepseek-ai/dsh
 ```
 
 ## 使用
 
 ```sh
-dsh-marketplace list                        # 列出全部插件(标出未验证版本)
-dsh-marketplace search <关键词>             # 按名字/描述搜索
-dsh-marketplace info <包名>                 # 版本与验证线详情
-dsh-marketplace install <包名>[@版本]       # 官方 dsh plugin add 一键安装
+dsh-marketplace list
+dsh-marketplace search <keyword>
+dsh-marketplace info <package-name>
+dsh-marketplace install <package-name>[@version]
 ```
 
-安装需要官方 `dsh` CLI 在 PATH 里(`npm i -g @deepseek-ai/dsh`)。
-默认安装进 `dsh-community-tui` profile;`--profile <名>` 可换。
+`list`、`search` 和 `info` 展示注册表中的验证线；与当前 Runtime 线不匹配的版本
+必须标记为 `[UNVERIFIED]`。`install` 只负责把用户选择传给官方安装链，不绕过官方插件协议。
 
-## 契约分类
-
-每个插件版本声明它验证过的官方 DSH 版本线(`0.1.0-rc.N`)。
-与当前验证线(默认 `0.1.0-rc.6`)不一致的版本标 `(未验证)`——
-**只推荐验证过的版本,不追最新**。
-
-## 收录插件
-
-在 [dsh-community-plugins](https://github.com/kamanager2012/dsh-community-plugins)
-给 `catalog.json` 开 PR,CI 校验格式后合入即可。
-
-## 开发
+## 开发与验证
 
 ```sh
 npm install
+npm run typecheck
 npm run build
 npm test
 ```
+
+插件作者应先在 [dsh-community-plugins](https://github.com/kamanager2012/dsh-community-plugins)
+为 `catalog.json` 提交记录，并提供实际安装和 Runtime 版本验证证据。不要把最新版本、
+README 声明或一次网络请求成功写成兼容性保证。
