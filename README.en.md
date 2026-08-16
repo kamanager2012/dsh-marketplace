@@ -10,6 +10,11 @@ not a replacement Package Manager, and not the source of plugin truth. The catal
 maintained by [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins);
 installation continues through the official `dsh plugin add` command.
 
+The current strategy is **GitHub-only distribution and maintenance**. Marketplace is
+stable for discovery/install UX; it is not a new Runtime, registry owner, or
+cross-platform release channel, and it should not compete with the canonical product's
+release work.
+
 ## Position in the ecosystem
 
 | Repository | Role | Entry |

@@ -9,6 +9,9 @@
 [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins)，
 实际安装继续调用官方 `dsh plugin add`。
 
+当前策略是 **GitHub-only distribution / 稳定维护**：Marketplace 暂不抢主产品发行
+优先级，也不扩展成新的 Runtime、Registry 或跨平台打包渠道。
+
 ## 在六仓生态中的位置
 
 | 仓库 | 定位 | 入口 |
