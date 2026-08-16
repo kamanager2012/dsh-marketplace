@@ -15,6 +15,12 @@ stable for discovery/install UX; it is not a new Runtime, registry owner, or
 cross-platform release channel, and it should not compete with the canonical product's
 release work.
 
+The three Community endpoints are shipped by
+[`dsh-community`](https://github.com/kamanager2012/dsh-community): WSL/Linux Terminal,
+Windows Desktop, and macOS Desktop. Official Web is an upstream companion and the
+Linux AppImage is optional/secondary; this repository only owns plugin discovery and
+installation UX.
+
 Current implementation status (2026-08-16): `info` displays the package digest and
 provenance recorded by the registry. Before invoking the official install chain,
 `install` prints the registry digest and an
