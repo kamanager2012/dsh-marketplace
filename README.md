@@ -12,9 +12,9 @@
 当前策略是 **GitHub-only distribution / 稳定维护**：Marketplace 暂不抢主产品发行
 优先级，也不扩展成新的 Runtime、Registry 或跨平台打包渠道。
 
-正式产品的三个社区端由 [`dsh-community`](https://github.com/kamanager2012/dsh-community)
-提供：WSL/Linux Terminal、Windows Desktop、macOS Desktop。官方 Web 是上游兼容入口，
-Linux AppImage 是可选/次要产物；本仓库只负责插件发现和安装体验。
+正式产品的五个社区端由 [`dsh-community`](https://github.com/kamanager2012/dsh-community)
+提供：WSL/Linux Terminal、Windows Desktop、macOS Desktop、Linux AppImage、Android（Labs）。官方 Web 是内核自带界面；
+本仓库只负责插件发现和安装体验。当前 Canonical Latest 是 [v0.1.1-rc.1](https://github.com/kamanager2012/dsh-community/releases/latest)。
 
 当前实现状态（2026-08-16）：`info` 会展示注册表记录的 package digest 和 provenance；
 `install` 会在调用官方安装链前打印注册表 digest 以及
