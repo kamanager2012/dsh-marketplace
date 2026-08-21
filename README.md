@@ -14,7 +14,9 @@
 
 正式产品的五个社区端由 [`dsh-community`](https://github.com/kamanager2012/dsh-community)
 提供：WSL/Linux Terminal、Windows Desktop、macOS Desktop、Linux AppImage、Android（Labs）。官方 Web 是内核自带界面；
-本仓库只负责插件发现和安装体验。当前 Canonical Latest 是 [v0.1.1-rc.1](https://github.com/kamanager2012/dsh-community/releases/latest)。
+本仓库只负责插件发现和安装体验。产品 Latest / 内核 pin 以
+[`dsh-community/docs/current-release.json`](https://github.com/kamanager2012/dsh-community/blob/main/docs/current-release.json)
+为准。
 
 当前实现状态（2026-08-16）：`info` 会展示注册表记录的 package digest 和 provenance；
 `install` 会在调用官方安装链前打印注册表 digest 以及

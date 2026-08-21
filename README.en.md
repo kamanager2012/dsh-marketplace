@@ -19,7 +19,8 @@ The five Community endpoints are shipped by
 [`dsh-community`](https://github.com/kamanager2012/dsh-community): WSL/Linux Terminal,
 Windows Desktop, macOS Desktop, Linux AppImage, and Android (Labs). Official Web is
 the kernel's own UI; this repository only owns plugin discovery and
-installation UX. Canonical Latest is [v0.1.1-rc.1](https://github.com/kamanager2012/dsh-community/releases/latest).
+installation UX. Product Latest / kernel pin live in
+[`dsh-community/docs/current-release.json`](https://github.com/kamanager2012/dsh-community/blob/main/docs/current-release.json).
 
 Current implementation status (2026-08-16): `info` displays the package digest and
 provenance recorded by the registry. Before invoking the official install chain,
