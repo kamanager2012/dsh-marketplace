@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
+import { DSH_TESTED_VERSION } from '../src/cli.js'
 import { parseCatalog, type PluginCatalog } from '../src/catalog.js'
 
 const valid: PluginCatalog = {
@@ -12,7 +13,7 @@ const valid: PluginCatalog = {
       author: 'dsh-community',
       repo: 'https://github.com/kamanager2012/dsh-community',
       category: 'ui',
-      versions: [{ version: '0.1.0', testedDsh: '0.1.0-rc.6', notes: 'ok' }],
+      versions: [{ version: '0.1.0', testedDsh: DSH_TESTED_VERSION, notes: 'ok' }],
     },
   ],
 }
@@ -31,7 +32,7 @@ describe('catalog schema', () => {
         ...valid.plugins[0],
         versions: [{
           version: '0.1.0',
-          testedDsh: '0.1.0-rc.6',
+          testedDsh: DSH_TESTED_VERSION,
           integrity: 'sha512-abcdef',
           provenance: true,
         }],
@@ -79,7 +80,7 @@ describe('catalog schema', () => {
           author: 'x',
           repo: 'https://example.com/x',
           category: 'game',
-          versions: [{ version: '1.0.0', testedDsh: '0.1.0-rc.6' }],
+          versions: [{ version: '1.0.0', testedDsh: DSH_TESTED_VERSION }],
         },
       ],
     }

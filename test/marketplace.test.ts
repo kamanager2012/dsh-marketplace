@@ -7,6 +7,7 @@ import type { PluginEntry } from '../src/catalog.js'
 import { fetchCatalog } from '../src/client.js'
 import { classifyPlugin, searchPlugins } from '../src/compat.js'
 import { installPluginArgv } from '../src/install.js'
+import { DSH_TESTED_VERSION } from '../src/cli.js'
 
 const sampleCatalog: { version: 1; updatedAt: string; plugins: PluginEntry[] } = {
   version: 1,
@@ -18,7 +19,7 @@ const sampleCatalog: { version: 1; updatedAt: string; plugins: PluginEntry[] } =
       author: 'a',
       repo: 'https://example.com/a',
       category: 'tool',
-      versions: [{ version: '1.0.0', testedDsh: '0.1.0-rc.6' }],
+      versions: [{ version: '1.0.0', testedDsh: DSH_TESTED_VERSION }],
     },
     {
       name: 'plugin-b',
@@ -27,7 +28,7 @@ const sampleCatalog: { version: 1; updatedAt: string; plugins: PluginEntry[] } =
       repo: 'https://example.com/b',
       category: 'ui',
       versions: [
-        { version: '0.9.0', testedDsh: '0.1.0-rc.6' },
+        { version: '0.9.0', testedDsh: DSH_TESTED_VERSION },
         { version: '2.0.0', testedDsh: '0.1.0-rc.9' },
       ],
     },
@@ -43,12 +44,12 @@ describe('marketplace client and classification', () => {
       repo: 'https://example.com/c',
       category: 'tool',
       versions: [
-        { version: '1.0.0-rc.1', testedDsh: '0.1.0-rc.6' },
-        { version: '1.0.0', testedDsh: '0.1.0-rc.6' },
-        { version: '0.9.9', testedDsh: '0.1.0-rc.6' },
+        { version: '1.0.0-rc.1', testedDsh: DSH_TESTED_VERSION },
+        { version: '1.0.0', testedDsh: DSH_TESTED_VERSION },
+        { version: '0.9.9', testedDsh: DSH_TESTED_VERSION },
       ],
     }
-    const classified = classifyPlugin(plugin, '0.1.0-rc.6')
+    const classified = classifyPlugin(plugin, DSH_TESTED_VERSION)
     assert.equal(classified.latest.entry.version, '1.0.0')
   })
 
@@ -74,15 +75,15 @@ describe('marketplace client and classification', () => {
   })
 
   it('classifies latest versions against the tested rc line', () => {
-    const a = classifyPlugin(sampleCatalog.plugins[0]!, '0.1.0-rc.6')
+    const a = classifyPlugin(sampleCatalog.plugins[0]!, DSH_TESTED_VERSION)
     assert.equal(a.latest.status, 'tested')
-    const b = classifyPlugin(sampleCatalog.plugins[1]!, '0.1.0-rc.6')
+    const b = classifyPlugin(sampleCatalog.plugins[1]!, DSH_TESTED_VERSION)
     assert.equal(b.latest.status, 'untested')
     assert.equal(b.hasTestedVersion, true)
   })
 
   it('searches by name and description', () => {
-    const classified = sampleCatalog.plugins.map(plugin => classifyPlugin(plugin, '0.1.0-rc.6'))
+    const classified = sampleCatalog.plugins.map(plugin => classifyPlugin(plugin, DSH_TESTED_VERSION))
     assert.deepEqual(searchPlugins(classified, 'beta').map(item => item.plugin.name), ['plugin-b'])
     assert.equal(searchPlugins(classified, '').length, 2)
   })
