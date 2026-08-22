@@ -35,6 +35,23 @@ const sampleCatalog: { version: 1; updatedAt: string; plugins: PluginEntry[] } =
 }
 
 describe('marketplace client and classification', () => {
+  it('classifies latest by semver order, release above prerelease', () => {
+    const plugin: PluginEntry = {
+      name: 'plugin-c',
+      description: 'Gamma 插件',
+      author: 'c',
+      repo: 'https://example.com/c',
+      category: 'tool',
+      versions: [
+        { version: '1.0.0-rc.1', testedDsh: '0.1.0-rc.6' },
+        { version: '1.0.0', testedDsh: '0.1.0-rc.6' },
+        { version: '0.9.9', testedDsh: '0.1.0-rc.6' },
+      ],
+    }
+    const classified = classifyPlugin(plugin, '0.1.0-rc.6')
+    assert.equal(classified.latest.entry.version, '1.0.0')
+  })
+
   it('fetches and parses the catalog', async () => {
     const fetchImpl = (async () => new Response(JSON.stringify(sampleCatalog), { status: 200 })) as unknown as typeof fetch
     const result = await fetchCatalog({ fetchImpl })

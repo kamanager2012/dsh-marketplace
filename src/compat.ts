@@ -24,8 +24,23 @@ export interface ClassifiedPlugin {
   hasTestedVersion: boolean
 }
 
+/** semver 语义比较:主版本按数值,release > 同版本号 prerelease(1.0.0 > 1.0.0-rc.1)。 */
+export function compareVersions(a: string, b: string): number {
+  const [aMain, aPre] = a.split('-', 2)
+  const [bMain, bPre] = b.split('-', 2)
+  const aParts = (aMain ?? '').split('.').map(Number)
+  const bParts = (bMain ?? '').split('.').map(Number)
+  for (let i = 0; i < Math.max(aParts.length, bParts.length); i += 1) {
+    const diff = (aParts[i] ?? 0) - (bParts[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  if (aPre === undefined && bPre !== undefined) return 1
+  if (aPre !== undefined && bPre === undefined) return -1
+  return (aPre ?? '').localeCompare(bPre ?? '')
+}
+
 export function classifyPlugin(plugin: PluginEntry, testedDshLine: string): ClassifiedPlugin {
-  const sorted = [...plugin.versions].sort((a, b) => a.version.localeCompare(b.version, undefined, { numeric: true }))
+  const sorted = [...plugin.versions].sort((a, b) => compareVersions(a.version, b.version))
   const latestEntry = sorted[sorted.length - 1]
   if (latestEntry === undefined) throw new Error(`plugin ${plugin.name} has no versions`)
   return {

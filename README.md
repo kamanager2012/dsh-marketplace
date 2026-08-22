@@ -74,7 +74,7 @@ dsh-marketplace install <package-name>[@version]
 ```
 
 `list`、`search` 和 `info` 展示注册表中的验证线；与当前 Runtime 线不匹配的版本
-必须标记为 `[UNVERIFIED]`。`install` 只负责把用户选择传给官方安装链，不绕过官方插件协议。
+必须标记为未验证（输出中为 `⚠未验证`）。`install` 会自动比对注册表 digest 与 npm `dist.integrity`，并把用户选择传给官方安装链，不绕过官方插件协议。
 
 ## 开发与验证
 

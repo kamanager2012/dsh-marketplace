@@ -45,13 +45,16 @@ dsh-marketplace install <package-name>[@version]
 
 `list`, `search`, and `info` display registry verification lines, not a live security scan.
 `info` also displays the registry-recorded digest and provenance when present. Before
-calling the official install chain, `install` prints the registry digest and a check
-command such as:
+calling the official install chain, `install` automatically compares the registry
+digest against npm `dist.integrity`: matching proceeds, mismatching refuses with a
+non-zero exit, and an unreachable registry check prints a warning. Example:
 
 ```text
-registry digest: sha512-...
-npm view <name>@<version> dist.integrity
+注册表 digest: sha512-...
+digest 核对一致 ✓(npm dist.integrity)
 ```
+
+If a catalog entry has no recorded digest, a placeholder hint asks you to verify via `npm view <name>@<version> dist.integrity` yourself.
 
 It forwards the user choice and does not bypass the official plugin protocol. The
 current implementation test suite is 11/11 green.
@@ -61,8 +64,7 @@ current implementation test suite is 11/11 green.
 | Marker | Meaning |
 | --- | --- |
 | Matching `testedDsh` | The registry has evidence for that Runtime line |
-| `[UNVERIFIED]` | No matching line, stale evidence, or existence-only information |
-| `[PARTIAL]` | Only install/composition evidence exists; do not claim full runtime compatibility |
+| `⚠未验证` / `(未验证)` (unverified) | No matching line, stale evidence, or existence-only information (rendered as `[UNVERIFIED]` in other ecosystem docs) |
 
 Compatibility is not trust. A plugin may read files, access the network, start processes, or mutate the system. Review its source, permission notes, and official install output before installing.
 
