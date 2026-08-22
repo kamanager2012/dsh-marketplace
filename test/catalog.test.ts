@@ -19,6 +19,32 @@ const valid: PluginCatalog = {
 }
 
 describe('catalog schema', () => {
+  it('is immune to prototype pollution via catalog fields', () => {
+    const hostile = JSON.parse(`{
+      "version": 1,
+      "updatedAt": "x",
+      "__proto__": {"polluted": true},
+      "plugins": [{
+        "name": "plugin-a",
+        "description": "A 插件",
+        "author": "a",
+        "repo": "https://example.com/a",
+        "category": "tool",
+        "__proto__": {"polluted": true},
+        "versions": [{
+          "version": "1.0.0",
+          "testedDsh": ${JSON.stringify(DSH_TESTED_VERSION)},
+          "__proto__": {"polluted": true}
+        }]
+      }]
+    }`) as unknown
+    const parsed = parseCatalog(hostile)
+    assert.equal(parsed?.plugins[0]?.name, 'plugin-a')
+    assert.equal((parsed as unknown as Record<string, unknown>)?.polluted, undefined)
+    assert.equal((parsed?.plugins[0] as unknown as Record<string, unknown>)?.polluted, undefined)
+    assert.equal(({} as Record<string, unknown>).polluted, undefined)
+  })
+
   it('accepts a well-formed catalog', () => {
     const catalog = parseCatalog(valid)
     assert.equal(catalog?.plugins[0]?.name, '@dsh-community/tui')
