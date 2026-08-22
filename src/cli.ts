@@ -34,6 +34,10 @@ export interface MarketplaceCliOptions {
   testedDsh?: string
   fetchImpl?: typeof fetch
   homeDir?: string
+  /** Injectable registry digest lookup (tests); defaults to `npm view <pkg>@<ver> dist.integrity`. */
+  npmViewIntegrity?: (packageName: string, version: string) => string | undefined
+  /** Injectable official installer (tests); defaults to spawnSync dsh plugin add. */
+  install?: (options: { profile: string; packageName: string; version: string }) => { status: number | null }
 }
 
 export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise<number> {
@@ -119,7 +123,7 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
         console.log('注册表未记录 digest;请自行核对:npm view ' + packageName + '@' + resolvedVersion + ' dist.integrity')
       } else {
         console.log(`注册表 digest: ${entry.integrity}`)
-        const published = npmDistIntegrity(packageName, resolvedVersion)
+        const published = (options.npmViewIntegrity ?? npmDistIntegrity)(packageName, resolvedVersion)
         if (published === entry.integrity) {
           console.log('digest 核对一致 ✓(npm dist.integrity)')
         } else if (published === undefined) {
@@ -130,7 +134,8 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
         }
       }
       if (entry?.provenance === true) console.log('npm provenance: ✓ 发布证明存在')
-      const { status } = installPlugin({ profile: options.profile ?? 'dsh-community-tui', packageName, version: resolvedVersion })
+      const install = options.install ?? ((opts) => installPlugin(opts))
+      const { status } = await Promise.resolve(install({ profile: options.profile ?? 'dsh-community-tui', packageName, version: resolvedVersion }))
       return status ?? 1
     }
     default: {
