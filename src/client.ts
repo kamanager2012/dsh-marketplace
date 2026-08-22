@@ -21,13 +21,25 @@ export interface FetchCatalogResult {
   source: 'network' | 'cache'
 }
 
+/** Hard caps so a hostile/broken registry cannot hang or OOM the CLI. */
+const FETCH_TIMEOUT_MS = 30_000
+const MAX_CATALOG_BYTES = 5 * 1024 * 1024
+
 export async function fetchCatalog(options: FetchCatalogOptions = {}): Promise<FetchCatalogResult> {
   const fetchImpl = options.fetchImpl ?? fetch
   const url = options.url ?? DEFAULT_REGISTRY_URL
   try {
-    const response = await fetchImpl(url)
+    const response = await fetchImpl(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
     if (!response.ok) throw new Error(`registry HTTP ${response.status}`)
-    const catalog = parseCatalog(await response.json())
+    const declared = Number(response.headers.get('content-length') ?? '')
+    if (Number.isInteger(declared) && declared > MAX_CATALOG_BYTES) {
+      throw new Error(`registry response too large (${declared} bytes)`)
+    }
+    const text = await response.text()
+    if (Buffer.byteLength(text) > MAX_CATALOG_BYTES) {
+      throw new Error('registry response too large')
+    }
+    const catalog = parseCatalog(JSON.parse(text))
     if (catalog === undefined) throw new Error('registry catalog failed schema validation')
     if (options.cachePath !== undefined) {
       mkdirSync(dirname(options.cachePath), { recursive: true })

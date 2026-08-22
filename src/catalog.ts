@@ -6,7 +6,7 @@ export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number]
 export interface PluginVersion {
   /** The npm version string of the plugin. */
   version: string
-  /** The official DSH rc line this version was tested against (0.1.0-rc.N). */
+  /** The official DSH rc line this version was tested against (0.1.x-rc.N). */
   testedDsh: string
   notes?: string
   /** npm dist.integrity (sha512) recorded by the registry verification. */
@@ -31,7 +31,7 @@ export interface PluginCatalog {
   plugins: PluginEntry[]
 }
 
-const DSH_RC_LINE = /^0\.1\.0-rc\.\d+$/u
+const DSH_RC_LINE = /^0\.1\.\d+-rc\.\d+$/u
 
 export function parseCatalog(raw: unknown): PluginCatalog | undefined {
   if (raw === null || typeof raw !== 'object') return undefined

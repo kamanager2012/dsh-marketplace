@@ -80,8 +80,9 @@ dsh-marketplace install <package-name>[@version]
 ```
 
 `list`, `search`, and `info` expose the tested Runtime lines from the registry.
-Versions that do not match the current Runtime line must be shown as `[UNVERIFIED]`.
-`install` passes the selection to the official install chain; it does not bypass the
+Versions that do not match the current Runtime line are shown as unverified (`⚠未验证`).
+`install` automatically compares the registry digest against npm `dist.integrity`,
+then passes the selection to the official install chain; it does not bypass the
 official plugin protocol.
 
 ## Development and verification

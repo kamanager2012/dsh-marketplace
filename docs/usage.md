@@ -44,13 +44,16 @@ dsh-marketplace install <package-name>[@version]
 ```
 
 `list`、`search` 和 `info` 展示的是注册表中的验证线，不是实时安全扫描结果。`info`
-还会显示注册表记录的 digest 和 provenance（如果有）。`install` 在调用官方安装链
-前会打印注册表 digest 和核对命令，例如：
+还会显示注册表记录的 digest 和 provenance（如果有）。`install` 会在调用官方安装链前自动比对注册表 digest 与 npm `dist.integrity`：
+一致则继续安装；不一致直接拒绝安装并退出非零；无法联网核对时会明示警告。
+例如：
 
 ```text
 注册表 digest: sha512-...
-核对:npm view <name>@<version> dist.integrity
+digest 核对一致 ✓(npm dist.integrity)
 ```
+
+若目录条目没有记录 digest，会打印占位提示，由你手动执行 `npm view <name>@<version> dist.integrity` 核对。
 
 它只传递用户选择，不绕过官方插件协议。当前实现的测试套件为 11/11 通过。
 
@@ -59,8 +62,7 @@ dsh-marketplace install <package-name>[@version]
 | 标记 | 含义 |
 | --- | --- |
 | 匹配 `testedDsh` | 注册表有对应 Runtime 线的验证记录 |
-| `[UNVERIFIED]` | 没有匹配验证线、证据过期或只有目录存在性 |
-| `[PARTIAL]` | 只有安装/组合等部分证据，不能宣称完整运行兼容 |
+| `⚠未验证` / `(未验证)` | 没有匹配验证线、证据过期或只有目录存在性（对应其它仓库文档中的 `[UNVERIFIED]`） |
 
 兼容不等于可信。插件可能读取文件、访问网络、启动进程或修改系统；安装前仍应查看插件源码、权限说明和官方安装输出。
 
