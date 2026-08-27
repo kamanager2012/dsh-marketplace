@@ -1,6 +1,6 @@
 /**
- * Plain-text marketplace CLI: list / info / install. No UI toolkit on
- * purpose — the Desktop shell and the TUI both reuse this entrypoint.
+ * Plain-text marketplace CLI: list / info / install / audit / mcp-wrap.
+ * No UI toolkit on purpose — the Desktop shell and the TUI both reuse this entrypoint.
  */
 import { homedir } from 'node:os'
 import { spawnSync } from 'node:child_process'
@@ -8,6 +8,8 @@ import { parseCatalog } from './catalog.js'
 import { defaultCachePath, fetchCatalog } from './client.js'
 import { classifyPlugin, searchPlugins } from './compat.js'
 import { installPlugin } from './install.js'
+import { auditPluginSecurity } from './audit.js'
+import { generateMcpDshPlugin, type McpServerConfig } from './mcp-adapter.js'
 
 /** 契约验证线:与插件注册表(dsh-community-plugins)当前 testedDsh 对齐。 */
 export const DSH_TESTED_VERSION = '0.1.1-rc.2'
@@ -75,6 +77,43 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
       }
       return 0
     }
+    case 'audit': {
+      const name = rest[0]
+      if (!name) {
+        console.error('用法: marketplace audit <plugin-name>')
+        return 1
+      }
+      const item = classified.find(entry => entry.plugin.name === name)
+      if (item === undefined) {
+        console.error(`catalog 里没有 ${name};先跑 marketplace list`)
+        return 1
+      }
+      const report = auditPluginSecurity(item.plugin.name, item.plugin.description)
+      console.log(`🛡️ 插件安全静态审查报告: ${report.packageName}`)
+      console.log(`  风险等级: [${report.riskLevel.toUpperCase()}]`)
+      console.log(`  声明能力: ${report.declaredCapabilities.join(', ')}`)
+      for (const f of report.findings) {
+        console.log(`   - ${f}`)
+      }
+      return 0
+    }
+    case 'mcp-wrap': {
+      const name = rest[0]
+      const cmd = rest[1]
+      if (!name || !cmd) {
+        console.error('用法: marketplace mcp-wrap <name> <command> [args...]')
+        return 1
+      }
+      const mcpConfig: McpServerConfig = {
+        name,
+        command: cmd,
+        args: rest.slice(2),
+      }
+      const def = generateMcpDshPlugin(mcpConfig)
+      console.log(`✓ 已生成 DSH MCP 插件适配定义: ${def.name}`)
+      console.log(JSON.stringify(def, null, 2))
+      return 0
+    }
     case 'info': {
       const name = rest[0]
       const item = classified.find(entry => entry.plugin.name === name)
@@ -139,7 +178,7 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
       return status ?? 1
     }
     default: {
-      console.error(`未知命令 ${commandName};可用: list / search <词> / info <name> / install <name>[@version]`)
+      console.error(`未知命令 ${commandName};可用: list / search <词> / info <name> / audit <name> / mcp-wrap <name> <cmd> / install <name>[@version]`)
       return 1
     }
   }
