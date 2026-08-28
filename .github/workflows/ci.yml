@@ -9,19 +9,10 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  notice:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-      - run: npm ci --no-audit --no-fund
-      - run: npm run build
-      - run: npm test
-      - name: Live catalog check
-        run: node dist/cli-entry.js list
+      - name: Point contributors at dsh-community
+        run: |
+          echo "This repository is a redirect."
+          echo "Development lives in https://github.com/kamanager2012/dsh-community/tree/main/packages/marketplace"

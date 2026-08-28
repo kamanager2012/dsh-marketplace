@@ -1,30 +1,21 @@
 {
   "name": "@kamanager2012/dsh-marketplace",
-  "version": "0.1.0",
-  "description": "DSH 社区市场客户端:浏览与一键安装官方 DeepSeek Harness 插件(零依赖,Node 22+)",
+  "version": "0.1.1",
+  "description": "MOVED: plugin discovery CLI now lives in dsh-community/packages/marketplace",
   "license": "MIT",
   "type": "module",
   "bin": {
     "dsh-marketplace": "./bin/dsh-marketplace.js"
   },
-  "main": "./dist/index.js",
   "files": [
-    "bin",
-    "dist"
+    "bin"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepare": "npm run build",
-    "test": "rm -rf dist-test && tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
-    "prepublishOnly": "npm run build && npm test"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.2",
-    "@types/node": "^22.18.0"
+    "start": "node bin/dsh-marketplace.js",
+    "test": "node -e \"process.stdout.write('moved to dsh-community/packages/marketplace\\n')\""
   },
   "repository": {
     "type": "git",
