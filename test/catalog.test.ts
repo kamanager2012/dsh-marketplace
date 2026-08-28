@@ -72,6 +72,45 @@ describe('catalog schema', () => {
     assert.equal(bare?.plugins[0]?.versions[0]?.provenance, undefined)
   })
 
+  it('carries registry security metadata and rejects the risk/confirmation invariant', () => {
+    const security = {
+      risk: 'high' as const,
+      requiresConfirmation: true,
+      network: 'binds 0.0.0.0',
+      dataEgress: 'LAN HTTP',
+      credentials: 'none',
+      filesystem: 'none extra',
+      processExecution: 'none',
+      persistence: 'none',
+      manualReviewStatus: 'partial' as const,
+      manualReviewNote: 'author README',
+      lastReviewedAt: '2026-08-28',
+    }
+    const withSecurity = {
+      ...valid,
+      plugins: [{
+        ...valid.plugins[0],
+        versions: [{ version: '0.1.0', testedDsh: DSH_TESTED_VERSION, security }],
+      }],
+    }
+    const catalog = parseCatalog(withSecurity)
+    assert.equal(catalog?.plugins[0]?.versions[0]?.security?.risk, 'high')
+    assert.equal(catalog?.plugins[0]?.versions[0]?.security?.requiresConfirmation, true)
+
+    const broken = {
+      ...withSecurity,
+      plugins: [{
+        ...valid.plugins[0],
+        versions: [{
+          version: '0.1.0',
+          testedDsh: DSH_TESTED_VERSION,
+          security: { ...security, requiresConfirmation: false },
+        }],
+      }],
+    }
+    assert.equal(parseCatalog(broken), undefined)
+  })
+
   it('rejects duplicate plugin names', () => {
     const dup = { ...valid, plugins: [...valid.plugins, ...valid.plugins] }
     assert.equal(parseCatalog(dup), undefined)

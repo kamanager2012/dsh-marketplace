@@ -4,7 +4,8 @@
  */
 import { homedir } from 'node:os'
 import { spawnSync } from 'node:child_process'
-import { parseCatalog } from './catalog.js'
+import { createInterface } from 'node:readline'
+import { parseCatalog, needsInstallConfirmation, type PluginSecurity } from './catalog.js'
 import { defaultCachePath, fetchCatalog } from './client.js'
 import { classifyPlugin, searchPlugins } from './compat.js'
 import { installPlugin } from './install.js'
@@ -17,6 +18,30 @@ export const DSH_TESTED_VERSION = '0.1.1-rc.2'
 /** npm 包名与 semver 的最小格式门禁:catalog 数据进官方 CLI argv 前必须通过。 */
 const NPM_NAME_RE = /^(@[a-z0-9-][a-z0-9-._]*\/)?[a-z0-9-][a-z0-9-._]*$/
 const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/
+
+function printSecurity(security: PluginSecurity): void {
+  console.log(`  风险 ${security.risk}  确认门 ${security.requiresConfirmation ? '需要' : '不需要'}  人工复核 ${security.manualReviewStatus} (${security.lastReviewedAt})`)
+  console.log(`     网络: ${security.network}`)
+  console.log(`     外传: ${security.dataEgress}`)
+  console.log(`     凭据: ${security.credentials}`)
+  console.log(`     文件: ${security.filesystem}`)
+  console.log(`     进程: ${security.processExecution}`)
+  console.log(`     持久化: ${security.persistence}`)
+  console.log(`     依据: ${security.manualReviewNote}`)
+}
+
+async function defaultConfirm(prompt: string): Promise<boolean> {
+  if (process.stdin.isTTY !== true || process.stdout.isTTY !== true) return false
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+  try {
+    const answer = await new Promise<string>((resolve) => {
+      rl.question(prompt, resolve)
+    })
+    return /^\s*y(es)?\s*$/i.test(answer)
+  } finally {
+    rl.close()
+  }
+}
 
 /** Query the public registry for a package's published integrity digest. */
 function npmDistIntegrity(packageName: string, version: string): string | undefined {
@@ -40,6 +65,8 @@ export interface MarketplaceCliOptions {
   npmViewIntegrity?: (packageName: string, version: string) => string | undefined
   /** Injectable official installer (tests); defaults to spawnSync dsh plugin add. */
   install?: (options: { profile: string; packageName: string; version: string }) => { status: number | null }
+  /** High-risk install confirmation. Tests inject this; default is stdin y/N when TTY. */
+  confirm?: (prompt: string) => Promise<boolean> | boolean
 }
 
 export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise<number> {
@@ -61,7 +88,9 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
       console.log(`社区市场 · 已验证线 ${testedDsh} · ${catalog.plugins.length} 个插件`)
       for (const item of classified) {
         const mark = item.latest.status === 'tested' ? '' : ' ⚠未验证'
-        console.log(`  ${item.plugin.name}  [${item.plugin.category}]  ${item.plugin.description.slice(0, 60)}${mark}`)
+        const risk = item.latest.entry.security?.risk
+        const riskMark = risk !== undefined && risk !== 'low' ? ` [${risk}]` : ''
+        console.log(`  ${item.plugin.name}  [${item.plugin.category}]  ${item.plugin.description.slice(0, 60)}${mark}${riskMark}`)
       }
       return 0
     }
@@ -88,8 +117,14 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
         console.error(`catalog 里没有 ${name};先跑 marketplace list`)
         return 1
       }
+      const registry = item.latest.entry.security
+      if (registry !== undefined) {
+        console.log(`注册表安全披露: ${item.plugin.name}@${item.latest.entry.version}`)
+        printSecurity(registry)
+        return 0
+      }
       const report = auditPluginSecurity(item.plugin.name, item.plugin.description)
-      console.log(`🛡️ 插件安全静态审查报告: ${report.packageName}`)
+      console.log(`本地启发式(注册表无 security): ${report.packageName}`)
       console.log(`  风险等级: [${report.riskLevel.toUpperCase()}]`)
       console.log(`  声明能力: ${report.declaredCapabilities.join(', ')}`)
       for (const f of report.findings) {
@@ -132,13 +167,15 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
         ].filter((fact) => fact !== undefined)
         console.log(`  ${version.version}  验证线 ${version.testedDsh} ${mark}${version.notes !== undefined ? ` — ${version.notes}` : ''}`)
         if (facts.length > 0) console.log(`     ${facts.join('  ·  ')}`)
+        if (version.security !== undefined) printSecurity(version.security)
       }
       return 0
     }
     case 'install': {
-      const target = rest[0]
+      const yes = rest.includes('--yes')
+      const target = rest.find((arg) => !arg.startsWith('--'))
       if (target === undefined) {
-        console.error('用法: marketplace install <name>[@version]')
+        console.error('用法: marketplace install [--yes] <name>[@version]')
         return 1
       }
       const at = target.lastIndexOf('@')
@@ -173,12 +210,24 @@ export async function runMarketplaceCli(options: MarketplaceCliOptions): Promise
         }
       }
       if (entry?.provenance === true) console.log('npm provenance: ✓ 发布证明存在')
+      if (entry?.security !== undefined) printSecurity(entry.security)
+      if (needsInstallConfirmation(entry?.security)) {
+        if (!yes) {
+          const ok = await Promise.resolve((options.confirm ?? defaultConfirm)(
+            `插件 ${packageName}@${resolvedVersion} 风险 ${entry?.security?.risk}，安装需确认。输入 y 继续: `,
+          ))
+          if (!ok) {
+            console.error(`拒绝安装:注册表要求确认(risk=${entry?.security?.risk})。非交互环境请加 --yes`)
+            return 1
+          }
+        }
+      }
       const install = options.install ?? ((opts) => installPlugin(opts))
       const { status } = await Promise.resolve(install({ profile: options.profile ?? 'dsh-community-tui', packageName, version: resolvedVersion }))
       return status ?? 1
     }
     default: {
-      console.error(`未知命令 ${commandName};可用: list / search <词> / info <name> / audit <name> / mcp-wrap <name> <cmd> / install <name>[@version]`)
+      console.error(`未知命令 ${commandName};可用: list / search <词> / info <name> / audit <name> / mcp-wrap <name> <cmd> / install [--yes] <name>[@version]`)
       return 1
     }
   }

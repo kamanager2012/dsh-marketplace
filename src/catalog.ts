@@ -3,6 +3,37 @@
 export const PLUGIN_CATEGORIES = ['ui', 'tool', 'provider', 'workflow', 'other'] as const
 export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number]
 
+export const RISK_LEVELS = ['low', 'medium', 'high'] as const
+export type PluginRisk = (typeof RISK_LEVELS)[number]
+export const MANUAL_REVIEW_STATUSES = ['unreviewed', 'partial', 'reviewed'] as const
+export type ManualReviewStatus = (typeof MANUAL_REVIEW_STATUSES)[number]
+
+const ISO_DATE_RE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u
+const SECURITY_TEXT_FIELDS = [
+  'network',
+  'dataEgress',
+  'credentials',
+  'filesystem',
+  'processExecution',
+  'persistence',
+  'manualReviewNote',
+] as const
+
+/** Per-version security disclosure from dsh-community-plugins. */
+export interface PluginSecurity {
+  risk: PluginRisk
+  requiresConfirmation: boolean
+  network: string
+  dataEgress: string
+  credentials: string
+  filesystem: string
+  processExecution: string
+  persistence: string
+  manualReviewStatus: ManualReviewStatus
+  manualReviewNote: string
+  lastReviewedAt: string
+}
+
 export interface PluginVersion {
   /** The npm version string of the plugin. */
   version: string
@@ -13,6 +44,38 @@ export interface PluginVersion {
   integrity?: string
   /** npm provenance attestation present at verification time. */
   provenance?: boolean
+  security?: PluginSecurity
+}
+
+export function needsInstallConfirmation(security: PluginSecurity | undefined): boolean {
+  if (security === undefined) return false
+  return security.requiresConfirmation === true || security.risk !== 'low'
+}
+
+function parseSecurity(raw: unknown): PluginSecurity | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const value = raw as Record<string, unknown>
+  for (const field of SECURITY_TEXT_FIELDS) {
+    if (typeof value[field] !== 'string' || value[field].trim() === '') return undefined
+  }
+  if (!RISK_LEVELS.includes(value.risk as PluginRisk)) return undefined
+  if (typeof value.requiresConfirmation !== 'boolean') return undefined
+  if (value.risk !== 'low' && value.requiresConfirmation !== true) return undefined
+  if (!MANUAL_REVIEW_STATUSES.includes(value.manualReviewStatus as ManualReviewStatus)) return undefined
+  if (typeof value.lastReviewedAt !== 'string' || !ISO_DATE_RE.test(value.lastReviewedAt)) return undefined
+  return {
+    risk: value.risk as PluginRisk,
+    requiresConfirmation: value.requiresConfirmation,
+    network: value.network as string,
+    dataEgress: value.dataEgress as string,
+    credentials: value.credentials as string,
+    filesystem: value.filesystem as string,
+    processExecution: value.processExecution as string,
+    persistence: value.persistence as string,
+    manualReviewStatus: value.manualReviewStatus as ManualReviewStatus,
+    manualReviewNote: value.manualReviewNote as string,
+    lastReviewedAt: value.lastReviewedAt,
+  }
 }
 
 export interface PluginEntry {
@@ -63,6 +126,11 @@ export function parseCatalog(raw: unknown): PluginCatalog | undefined {
       if (typeof version.notes === 'string' && version.notes !== '') entry.notes = version.notes
       if (typeof version.integrity === 'string' && version.integrity !== '') entry.integrity = version.integrity
       if (version.provenance === true) entry.provenance = true
+      if (version.security !== undefined) {
+        const security = parseSecurity(version.security)
+        if (security === undefined) return undefined
+        entry.security = security
+      }
       versions.push(entry)
     }
     plugins.push({

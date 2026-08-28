@@ -40,22 +40,16 @@ npm link
 dsh-marketplace list
 dsh-marketplace search <keyword>
 dsh-marketplace info <package-name>
-dsh-marketplace install <package-name>[@version]
+dsh-marketplace audit <package-name>
+dsh-marketplace install [--yes] <package-name>[@version]
 ```
 
-`list`、`search` 和 `info` 展示的是注册表中的验证线，不是实时安全扫描结果。`info`
-还会显示注册表记录的 digest 和 provenance（如果有）。`install` 会在调用官方安装链前自动比对注册表 digest 与 npm `dist.integrity`：
-一致则继续安装；不一致直接拒绝安装并退出非零；无法联网核对时会明示警告。
-例如：
+`list`、`search` 和 `info` 展示的是注册表中的验证线。`info` 还会显示 digest、provenance
+和 `security` 披露（如果有）。`install` 会在调用官方安装链前自动比对注册表 digest 与 npm `dist.integrity`：
+一致则继续；不一致直接拒绝。`security.requiresConfirmation` 为 true 或 `risk` 不是 `low`
+时，非交互环境必须加 `--yes`，否则退出非零。
 
-```text
-注册表 digest: sha512-...
-digest 核对一致 ✓(npm dist.integrity)
-```
-
-若目录条目没有记录 digest，会打印占位提示，由你手动执行 `npm view <name>@<version> dist.integrity` 核对。
-
-它只传递用户选择，不绕过官方插件协议。当前实现的测试套件为 11/11 通过。
+不要把目录成功当成安全扫描。`audit` 在注册表有 `security` 时打印那份披露；没有时才退回本地启发式。
 
 ## 如何解读兼容性
 

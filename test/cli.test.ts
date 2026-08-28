@@ -30,6 +30,20 @@ async function captureStdout(fn: () => Promise<number>): Promise<{ code: number;
   }
 }
 
+const highSecurity = {
+  risk: 'high' as const,
+  requiresConfirmation: true,
+  network: 'binds 0.0.0.0',
+  dataEgress: 'LAN HTTP',
+  credentials: 'none',
+  filesystem: 'none extra',
+  processExecution: 'none',
+  persistence: 'none',
+  manualReviewStatus: 'partial' as const,
+  manualReviewNote: 'author README',
+  lastReviewedAt: '2026-08-28',
+}
+
 describe('marketplace cli', () => {
   it('lists plugins with unverified marks', async () => {
     const result = await captureStdout(() => runMarketplaceCli({
@@ -111,6 +125,59 @@ describe('marketplace cli', () => {
     })
     assert.equal(code, 1)
     assert.equal(called, false)
+  })
+
+  it('refuses a high-risk install without --yes or confirm', async () => {
+    let installCalls = 0
+    const code = await runMarketplaceCli({
+      args: ['install', 'plugin-a@1.0.0'],
+      fetchImpl: okFetchOf(catalogWith([{
+        name: 'plugin-a', description: 'A 插件', author: 'a',
+        repo: 'https://example.com/a', category: 'tool',
+        versions: [{ version: '1.0.0', testedDsh: TESTED, integrity: 'sha512-AAAA', security: highSecurity }],
+      }])),
+      npmViewIntegrity: () => 'sha512-AAAA',
+      install: () => { installCalls += 1; return { status: 0 } },
+    })
+    assert.equal(code, 1)
+    assert.equal(installCalls, 0)
+  })
+
+  it('installs a high-risk plugin only after --yes', async () => {
+    let installCalls = 0
+    const code = await runMarketplaceCli({
+      args: ['install', '--yes', 'plugin-a@1.0.0'],
+      fetchImpl: okFetchOf(catalogWith([{
+        name: 'plugin-a', description: 'A 插件', author: 'a',
+        repo: 'https://example.com/a', category: 'tool',
+        versions: [{ version: '1.0.0', testedDsh: TESTED, integrity: 'sha512-AAAA', security: highSecurity }],
+      }])),
+      npmViewIntegrity: () => 'sha512-AAAA',
+      install: () => { installCalls += 1; return { status: 0 } },
+    })
+    assert.equal(code, 0)
+    assert.equal(installCalls, 1)
+  })
+
+  it('shows registry security on info and prefers it on audit', async () => {
+    const catalog = catalogWith([{
+      name: 'plugin-a', description: 'A 插件', author: 'a',
+      repo: 'https://example.com/a', category: 'tool',
+      versions: [{ version: '1.0.0', testedDsh: TESTED, security: highSecurity }],
+    }])
+    const info = await captureStdout(() => runMarketplaceCli({
+      args: ['info', 'plugin-a'],
+      fetchImpl: okFetchOf(catalog),
+    }))
+    assert.equal(info.code, 0)
+    assert.match(info.out, /风险 high/)
+    const audit = await captureStdout(() => runMarketplaceCli({
+      args: ['audit', 'plugin-a'],
+      fetchImpl: okFetchOf(catalog),
+    }))
+    assert.equal(audit.code, 0)
+    assert.match(audit.out, /注册表安全披露/)
+    assert.doesNotMatch(audit.out, /本地启发式/)
   })
 })
 

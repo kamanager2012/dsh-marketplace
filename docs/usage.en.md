@@ -40,24 +40,18 @@ npm link
 dsh-marketplace list
 dsh-marketplace search <keyword>
 dsh-marketplace info <package-name>
-dsh-marketplace install <package-name>[@version]
+dsh-marketplace audit <package-name>
+dsh-marketplace install [--yes] <package-name>[@version]
 ```
 
-`list`, `search`, and `info` display registry verification lines, not a live security scan.
-`info` also displays the registry-recorded digest and provenance when present. Before
-calling the official install chain, `install` automatically compares the registry
-digest against npm `dist.integrity`: matching proceeds, mismatching refuses with a
-non-zero exit, and an unreachable registry check prints a warning. Example:
+`list`, `search`, and `info` display registry verification lines.
+`info` also displays digest, provenance, and `security` when present. Before
+calling the official install chain, `install` compares the registry digest against npm
+`dist.integrity`. Plugins with `requiresConfirmation` or non-`low` `risk` refuse unless
+`--yes` is passed.
 
-```text
-注册表 digest: sha512-...
-digest 核对一致 ✓(npm dist.integrity)
-```
-
-If a catalog entry has no recorded digest, a placeholder hint asks you to verify via `npm view <name>@<version> dist.integrity` yourself.
-
-It forwards the user choice and does not bypass the official plugin protocol. The
-current implementation test suite is 11/11 green.
+`audit` prints registry `security` when present; otherwise it falls back to a local
+heuristic. Compatibility is not a live security scan.
 
 ## Read compatibility correctly
 

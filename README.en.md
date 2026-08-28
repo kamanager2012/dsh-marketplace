@@ -22,11 +22,10 @@ the kernel's own UI; this repository only owns plugin discovery and
 installation UX. Product Latest / kernel pin live in
 [`dsh-community/docs/current-release.json`](https://github.com/kamanager2012/dsh-community/blob/main/docs/current-release.json).
 
-Current implementation status (2026-08-16): `info` displays the package digest and
-provenance recorded by the registry. Before invoking the official install chain,
-`install` prints the registry digest and an
-`npm view <name>@<version> dist.integrity` verification command. The current test suite
-is **11/11 green**.
+Current implementation status (2026-08-29): `info` / `audit` show registry
+`security` disclosures. `install` checks digest before the official chain, and
+refuses `requiresConfirmation` / non-`low` risk plugins unless `--yes` or an
+interactive confirm. Run `npm test` for the current suite size.
 
 ## Position in the ecosystem
 
@@ -76,14 +75,16 @@ npm i -g @deepseek-ai/dsh
 dsh-marketplace list
 dsh-marketplace search <keyword>
 dsh-marketplace info <package-name>
-dsh-marketplace install <package-name>[@version]
+dsh-marketplace audit <package-name>
+dsh-marketplace install [--yes] <package-name>[@version]
 ```
 
 `list`, `search`, and `info` expose the tested Runtime lines from the registry.
 Versions that do not match the current Runtime line are shown as unverified (`⚠未验证`).
 `install` automatically compares the registry digest against npm `dist.integrity`,
 then passes the selection to the official install chain; it does not bypass the
-official plugin protocol.
+official plugin protocol. Plugins with `requiresConfirmation` or `risk` other than
+`low` are refused unless you pass `--yes`.
 
 ## Development and verification
 

@@ -18,9 +18,9 @@
 [`dsh-community/docs/current-release.json`](https://github.com/kamanager2012/dsh-community/blob/main/docs/current-release.json)
 为准。
 
-当前实现状态（2026-08-16）：`info` 会展示注册表记录的 package digest 和 provenance；
-`install` 会在调用官方安装链前打印注册表 digest 以及
-`npm view <name>@<version> dist.integrity` 核对命令。当前测试套件为 **11/11 通过**。
+当前实现状态（2026-08-29）：`info` / `audit` 会展示注册表 `security` 披露。
+`install` 在调用官方安装链前核 digest；`risk` 非 `low` 或 `requiresConfirmation: true`
+时必须 `--yes` 或交互确认，否则退出 1。测试套件随命令增加，以 `npm test` 为准。
 
 ## 在六仓生态中的位置
 
@@ -70,11 +70,14 @@ npm i -g @deepseek-ai/dsh
 dsh-marketplace list
 dsh-marketplace search <keyword>
 dsh-marketplace info <package-name>
-dsh-marketplace install <package-name>[@version]
+dsh-marketplace audit <package-name>
+dsh-marketplace install [--yes] <package-name>[@version]
 ```
 
 `list`、`search` 和 `info` 展示注册表中的验证线；与当前 Runtime 线不匹配的版本
-必须标记为未验证（输出中为 `⚠未验证`）。`install` 会自动比对注册表 digest 与 npm `dist.integrity`，并把用户选择传给官方安装链，不绕过官方插件协议。
+必须标记为未验证（输出中为 `⚠未验证`）。`install` 会自动比对注册表 digest 与 npm `dist.integrity`，
+并把用户选择传给官方安装链，不绕过官方插件协议。高风险条目（注册表 `requiresConfirmation`
+或 `risk` 不是 `low`）默认拒绝安装；确认后加 `--yes`。
 
 ## 开发与验证
 
