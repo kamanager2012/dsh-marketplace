@@ -4,7 +4,7 @@
 
 [English](README.en.md) | 简体中文
 
-本仓库不再接受功能开发，GitHub 仓库已归档。目录浏览、搜索、兼容性展示和安装入口都在产品仓里；安装仍调用官方 `dsh plugin add`。注册表仍是独立仓 [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins)。
+本仓库不再接受功能开发，GitHub 仓库已归档。目录浏览、搜索、兼容性展示和安装入口都在产品仓里；安装仍调用官方 `dsh plugin add`。插件目录是 [`packages/marketplace/catalog.json`](https://github.com/kamanager2012/dsh-community/blob/main/packages/marketplace/catalog.json)；独立仓 `dsh-community-plugins` 已归档。
 
 ## 怎么用
 

@@ -4,7 +4,7 @@
 
 [简体中文](README.md) | **English**
 
-This repository is archived. Catalog browse, search, compatibility labels, and the install entry live in the product repo. Installation still calls official `dsh plugin add`. The registry remains [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins).
+This repository is archived. Catalog browse, search, compatibility labels, and the install entry live in the product repo. Installation still calls official `dsh plugin add`. The catalog is [`packages/marketplace/catalog.json`](https://github.com/kamanager2012/dsh-community/blob/main/packages/marketplace/catalog.json); the standalone [`dsh-community-plugins`](https://github.com/kamanager2012/dsh-community-plugins) repo is archived.
 
 ## How to run it
 
